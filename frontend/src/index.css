@@ -53,3 +53,21 @@
 html {
   scroll-behavior: smooth;
 }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0a0e1a] text-white antialiased;
+    font-family: 'Space Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .font-space {
+    font-family: 'Space Mono', monospace;
+  }
+}

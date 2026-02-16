@@ -1,204 +1,150 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Sparkles, Zap, Users, ArrowRight } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100 },
+    },
+  };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0e1a]">
-      {/* Animated Background Grid */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div 
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
-            transition: 'transform 0.1s ease-out'
-          }}
-        />
-        
-        {/* Radial Gradient Overlay */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 255, 136, 0.15), transparent 50%)`
-          }}
-        />
+    <div className="relative min-h-screen bg-[#0a0e1a] overflow-hidden selection:bg-[#00ff88] selection:text-[#0a0e1a]">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-[#00ff88] opacity-20 blur-[100px]" />
+        <div className="absolute right-0 bottom-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-[#7b2ff7] opacity-20 blur-[100px]" />
       </div>
 
-      {/* Floating Matrix Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(30)].map((_, i) => (
-          <div
+      {/* Floating Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(15)].map((_, i) => (
+          <motion.div
             key={i}
-            className="absolute text-[#00ff88] opacity-20 font-mono text-xs animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 10}s`
+            className="absolute text-[#00ff88]/20 font-mono text-sm"
+            initial={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }}
+            animate={{
+              y: [null, Math.random() * -100],
+              opacity: [0.2, 0.5, 0.2],
+            }}
+            transition={{
+              duration: Math.random() * 5 + 5,
+              repeat: Infinity,
+              ease: "linear",
             }}
           >
-            {['01', '10', '11', '00', '{', '}', '<', '>', '/'][Math.floor(Math.random() * 9)]}
-          </div>
+            {['1', '0', '0x', 'AF'][i % 4]}
+          </motion.div>
         ))}
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
-        {/* Logo/Badge */}
-        <div className="mb-8 animate-fade-in">
-          <div className="relative">
-            <div className="absolute inset-0 blur-xl bg-[#00ff88] opacity-30 animate-pulse-slow" />
-            <div className="relative px-6 py-2 border-2 border-[#00ff88] bg-[#0a0e1a]/90 backdrop-blur-sm">
-              <span className="text-[#00ff88] font-mono text-sm tracking-widest">MATRIX CLUB PRESENTS</span>
-            </div>
-          </div>
-        </div>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 container mx-auto px-6 pt-32 pb-20 flex flex-col items-center justify-center min-h-screen text-center"
+      >
+        {/* Badge */}
+        <motion.div variants={itemVariants} className="mb-8">
+          <span className="px-4 py-1.5 rounded-full border border-[#00ff88]/30 bg-[#00ff88]/10 text-[#00ff88] font-mono text-xs tracking-wider uppercase backdrop-blur-md">
+            System Online • v2.0
+          </span>
+        </motion.div>
 
-        {/* Main Heading */}
-        <h1 className="mb-6 text-center animate-slide-up">
-          <div className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white leading-none mb-2">
+        {/* Hero Title with Glitch Effect */}
+        <motion.div variants={itemVariants} className="mb-6 relative">
+          <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-white mb-2 font-space">
             MATCH
-          </div>
-          <div className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black leading-none">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff88] via-[#00d9ff] to-[#7b2ff7]">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#00ff88] via-[#00d9ff] to-[#7b2ff7]">
               MATRIX
             </span>
-          </div>
-        </h1>
+          </h1>
+        </motion.div>
 
         {/* Subtitle */}
-        <p className="max-w-2xl mx-auto mb-4 text-xl md:text-2xl text-center text-gray-300 animate-fade-in-delay font-light tracking-wide">
-          Tech Compatibility & Collaboration Event
-        </p>
-
-        {/* Event Details */}
-        <div className="flex items-center gap-3 mb-12 animate-fade-in-delay-2">
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#00ff88]" />
-          <div className="px-4 py-2 border border-[#00ff88]/30 bg-[#00ff88]/5 backdrop-blur-sm">
-            <span className="text-[#00ff88] font-mono text-sm">February 20, 2026</span>
-          </div>
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#00ff88]" />
-        </div>
+        <motion.div variants={itemVariants} className="max-w-2xl mx-auto mb-12">
+          <p className="text-xl text-gray-400 font-light leading-relaxed">
+            The ultimate algorithmic collaboration protocol. <br />
+            Find your perfect tech stack partner through neural matching.
+          </p>
+        </motion.div>
 
         {/* CTA Button */}
-        <button
-          onClick={() => navigate('/register')}
-          className="group relative px-12 py-5 text-lg font-bold text-[#0a0e1a] bg-[#00ff88] overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#00ff88]/50 animate-fade-in-delay-3"
-        >
-          <span className="relative z-10">START QUIZ</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#00d9ff] to-[#7b2ff7] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          <span className="absolute inset-0 z-10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            START QUIZ
-          </span>
-        </button>
+        <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <button
+            onClick={() => navigate('/register')}
+            className="group relative px-8 py-4 bg-[#00ff88] text-[#0a0e1a] font-bold text-lg tracking-wider overflow-hidden rounded-sm"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              INITIALIZE PROTOCOL <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </span>
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+          </button>
+        </motion.div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 max-w-5xl w-full animate-fade-in-delay-4">
-          {[
-            { title: 'Take the Quiz', desc: 'Answer questions about your tech stack and working style', icon: '📝' },
-            { title: 'Get Matched', desc: 'Our algorithm finds your perfect collaboration partner', icon: '🔗' },
-            { title: 'Build Together', desc: 'Team up and create something amazing', icon: '🚀' }
-          ].map((card, idx) => (
-            <div 
-              key={idx} 
-              className="group relative p-6 border border-[#00ff88]/20 bg-[#0a0e1a]/50 backdrop-blur-sm hover:border-[#00ff88]/50 transition-all duration-300 hover:translate-y-[-4px]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#00ff88]/0 to-[#00ff88]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative">
-                <div className="text-4xl mb-4">{card.icon}</div>
-                <h3 className="text-xl font-bold text-[#00ff88] mb-2">{card.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{card.desc}</p>
-              </div>
-            </div>
-          ))}
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-32 w-full max-w-6xl text-left">
+          <FeatureCard 
+            icon={<Zap className="w-8 h-8 text-[#00d9ff]" />}
+            title="Rapid Matching"
+            desc="Our neural engine processes your skills in milliseconds to find the optimal teammate."
+            delay={0.2}
+          />
+          <FeatureCard 
+            icon={<Users className="w-8 h-8 text-[#00ff88]" />}
+            title="Stack Compatible"
+            desc="We analyze syntax preferences, IDE choices, and working hours for friction-free coding."
+            delay={0.4}
+          />
+          <FeatureCard 
+            icon={<Sparkles className="w-8 h-8 text-[#7b2ff7]" />}
+            title="Event Ready"
+            desc="Specifically calibrated for hackathons, sprints, and rapid prototyping sessions."
+            delay={0.6}
+          />
         </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px);
-          }
-          25% {
-            transform: translateY(-20px) translateX(10px);
-          }
-          50% {
-            transform: translateY(-10px) translateX(-10px);
-          }
-          75% {
-            transform: translateY(-30px) translateX(5px);
-          }
-        }
-
-        .animate-float {
-          animation: float 10s infinite ease-in-out;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 1s ease-out;
-        }
-
-        .animate-fade-in-delay {
-          animation: fadeIn 1s ease-out 0.3s both;
-        }
-
-        .animate-fade-in-delay-2 {
-          animation: fadeIn 1s ease-out 0.6s both;
-        }
-
-        .animate-fade-in-delay-3 {
-          animation: fadeIn 1s ease-out 0.9s both;
-        }
-
-        .animate-fade-in-delay-4 {
-          animation: fadeIn 1s ease-out 1.2s both;
-        }
-
-        .animate-slide-up {
-          animation: slideUp 1s ease-out 0.2s both;
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            transform: translateY(30px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
+      </motion.div>
     </div>
   );
 };
+
+const FeatureCard = ({ icon, title, desc, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay, duration: 0.5 }}
+    whileHover={{ y: -5 }}
+    className="p-8 rounded-2xl bg-[#0f1623] border border-white/5 hover:border-[#00ff88]/30 transition-colors group"
+  >
+    <div className="mb-6 p-3 bg-white/5 w-fit rounded-xl group-hover:bg-white/10 transition-colors">
+      {icon}
+    </div>
+    <h3 className="text-2xl font-bold text-white mb-3 font-space">{title}</h3>
+    <p className="text-gray-400 leading-relaxed text-sm">{desc}</p>
+  </motion.div>
+);
 
 export default Home;

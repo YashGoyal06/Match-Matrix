@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        'border': 'rgba(255, 255, 255, 0.1)', // <--- ADD THIS LINE
         'matrix-green': '#00ff88',
         'matrix-cyan': '#00d9ff',
         'matrix-purple': '#7b2ff7',
