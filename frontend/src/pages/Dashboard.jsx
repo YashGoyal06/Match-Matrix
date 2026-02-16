@@ -17,28 +17,38 @@ const Dashboard = () => {
       return;
     }
 
-    // Poll for matches (Simulate real-time updates)
+    // Initial Fetch
     fetchMatchData(email);
-    const interval = setInterval(() => fetchMatchData(email), 3000);
+
+    // Poll every 5 seconds for updates
+    const interval = setInterval(() => fetchMatchData(email), 5000);
     return () => clearInterval(interval);
   }, [navigate]);
 
   const fetchMatchData = async (email) => {
     try {
       const response = await participantAPI.getMyMatch(email);
-      if (response.data.success) {
+      
+      // Axios returns data in response.data
+      const data = response.data; 
+
+      if (data.success) {
         setMatchData(prev => {
-          // Only trigger confetti if state changes from unmatched to matched
-          if (!prev?.match_found && response.data.data.match_found) {
+          // Trigger confetti only if status changes from unmatched (or null) to matched
+          const wasMatched = prev?.match_found;
+          const isMatched = data.match_found;
+
+          if (!wasMatched && isMatched) {
             setShowConfetti(true);
             setTimeout(() => setShowConfetti(false), 5000);
           }
-          return response.data.data;
+          return data;
         });
       }
     } catch (err) {
       console.error("Dashboard Error:", err);
     } finally {
+      // Stop loading spinner after first attempt
       setLoading(false);
     }
   };
@@ -179,7 +189,7 @@ const Dashboard = () => {
                     SYSTEM MATCH CONFIRMED
                   </div>
                   <h2 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 tracking-tighter mb-4">
-                    Perfect Match
+                    Match Found
                   </h2>
                   <p className="text-gray-400 text-lg">Your compatibility metrics are synchronized.</p>
                 </div>
