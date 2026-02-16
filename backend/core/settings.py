@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-now')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://*.vercel.app']
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'https://hf.space']
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

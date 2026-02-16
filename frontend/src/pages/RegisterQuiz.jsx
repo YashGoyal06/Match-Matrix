@@ -197,12 +197,40 @@ const RegisterQuiz = () => {
     exit: (direction) => ({ zIndex: 0, x: direction < 0 ? 50 : -50, opacity: 0 })
   };
 
-  const handleNext = (skipValidation = false) => {
-    if (skipValidation || validateStep()) {
+  // --- UPDATED HANDLENEXT FUNCTION ---
+  const handleNext = async (skipValidation = false) => {
+    // 1. Basic Form Validation
+    if (!skipValidation && !validateStep()) {
+      shakeForm();
+      return;
+    }
+
+    // 2. SERVER-SIDE VERIFICATION (Only for Step 1)
+    if (currentStep === 1) {
+      setLoading(true);
+      setError(''); // Clear previous errors
+      try {
+        // Call Django to check JSON whitelist
+        await participantAPI.verify({
+          name: formData.name,
+          email: formData.email
+        });
+        
+        // If successful, proceed
+        setDirection(1);
+        setCurrentStep(c => c + 1);
+        
+      } catch (err) {
+        // Show error from backend (e.g. "User not found")
+        setError(err.message || "Access Denied: You are not in the list.");
+        shakeForm();
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Normal flow for quiz questions (Step 2+)
       setDirection(1);
       setCurrentStep(c => c + 1);
-    } else {
-      shakeForm();
     }
   };
 
@@ -212,21 +240,14 @@ const RegisterQuiz = () => {
   };
 
   const handleOptionSelect = (key, value) => {
-    // 1. Instantly update state (for UI highlight)
     updateField(key, value);
-
-    // 2. Clear any previous errors
     setError('');
 
-    // 3. Short delay then advance, SKIPPING VALIDATION because we know 'value' was just clicked.
     setTimeout(() => {
-      // If it was the last question
       if ((currentStep - 1) === totalQuestions) {
-        // Pass the final value directly to submit to avoid stale state issues
         const finalData = { ...formData, [key]: value };
         handleSubmit(finalData);
       } else {
-        // Pass true to skip validation since we know we have a value
         handleNext(true);
       }
     }, 400);
@@ -244,7 +265,6 @@ const RegisterQuiz = () => {
       if (!formData.name || !formData.email || !formData.student_id) return setError("Missing identity details");
       return true;
     }
-    // Questions
     const questionIndex = currentStep - 2;
     if (questionIndex >= 0 && questionIndex < questions.length) {
       const qKey = questions[questionIndex].key;
@@ -255,7 +275,6 @@ const RegisterQuiz = () => {
   };
 
   const handleSubmit = async (finalDataOverride) => {
-    // Use override data if provided (to capture the very last state update correctly)
     const dataToSubmit = finalDataOverride || formData;
 
     if (!dataToSubmit.name || !dataToSubmit.email) {
@@ -268,6 +287,7 @@ const RegisterQuiz = () => {
     const payload = {
       ...dataToSubmit,
       role: "fullstack",
+      // Extra dummy fields if your backend expects them, otherwise redundant
       experience_level: "intermediate",
       preferred_language: "JavaScript",
       frameworks: ["React", "Node.js"],
@@ -292,6 +312,7 @@ const RegisterQuiz = () => {
       }
     } catch (err) {
       console.error("Submit Error:", err);
+      // Show the specific error message from the backend if available
       setError(err.response?.data?.message || 'Registration failed');
       shakeForm();
     } finally {
@@ -310,7 +331,7 @@ const RegisterQuiz = () => {
 
   return (
     <div className="relative min-h-screen bg-[#0a0e1a] text-white overflow-hidden flex flex-col font-space">
-      {/* Dynamic Background */}
+      {/* Background */}
       <div className="absolute inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
@@ -362,10 +383,6 @@ const RegisterQuiz = () => {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-        {/* Existing blur effects can remain or be removed. I will keep them but make them clearer or remove if they clash. The user asked for "Light ray background" so I will comment out the old static blurs to avoid clutter, or keep them as subtle reinforcement. Let's keep them but ensure z-index is correct. Actually, to match the home page "clean" look with rays, I might want to remove the static blurs (lines 323-324). I'll comment them out for now to prioritize the rays. */}
-        {/* <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#00ff88]/5 rounded-full blur-[120px] pointer-events-none" /> */}
-        {/* <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#7b2ff7]/5 rounded-full blur-[120px] pointer-events-none" /> */}
-
         <div className="w-full max-w-3xl relative">
 
           {/* Header */}
