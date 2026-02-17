@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronRight, ChevronLeft
-} from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { participantAPI } from '../api';
 import LightRays from './LightRays';
 
@@ -197,7 +195,7 @@ const RegisterQuiz = () => {
     exit: (direction) => ({ zIndex: 0, x: direction < 0 ? 50 : -50, opacity: 0 })
   };
 
-  // --- UPDATED HANDLENEXT FUNCTION ---
+  // --- UPDATED HANDLER with Redirect & Validation ---
   const handleNext = async (skipValidation = false) => {
     // 1. Basic Form Validation
     if (!skipValidation && !validateStep()) {
@@ -205,24 +203,33 @@ const RegisterQuiz = () => {
       return;
     }
 
-    // 2. SERVER-SIDE VERIFICATION (Only for Step 1)
+    // 2. SERVER-SIDE VERIFICATION (Step 1 Only)
     if (currentStep === 1) {
       setLoading(true);
-      setError(''); // Clear previous errors
+      setError(''); 
+      
       try {
-        // Call Django to check JSON whitelist
-        await participantAPI.verify({
+        // Check whitelist AND registration status
+        const response = await participantAPI.verify({
           name: formData.name,
           email: formData.email
         });
         
-        // If successful, proceed
+        // --- REDIRECT LOGIC ---
+        // If backend says they are already registered
+        if (response.status === 'registered') {
+           localStorage.setItem('userEmail', formData.email);
+           navigate('/dashboard'); 
+           return; // Stop execution, don't move to next step
+        }
+        
+        // --- NORMAL SUCCESS ---
         setDirection(1);
         setCurrentStep(c => c + 1);
         
       } catch (err) {
-        // Show error from backend (e.g. "User not found")
-        setError(err.message || "Access Denied: You are not in the list.");
+        // Show specific backend error (e.g., Access Denied)
+        setError(err.message || "Access Denied: Not on the list.");
         shakeForm();
       } finally {
         setLoading(false);
@@ -287,7 +294,6 @@ const RegisterQuiz = () => {
     const payload = {
       ...dataToSubmit,
       role: "fullstack",
-      // Extra dummy fields if your backend expects them, otherwise redundant
       experience_level: "intermediate",
       preferred_language: "JavaScript",
       frameworks: ["React", "Node.js"],
@@ -312,7 +318,6 @@ const RegisterQuiz = () => {
       }
     } catch (err) {
       console.error("Submit Error:", err);
-      // Show the specific error message from the backend if available
       setError(err.response?.data?.message || 'Registration failed');
       shakeForm();
     } finally {
@@ -331,7 +336,6 @@ const RegisterQuiz = () => {
 
   return (
     <div className="relative min-h-screen bg-[#0a0e1a] text-white overflow-hidden flex flex-col font-space">
-      {/* Background */}
       <div className="absolute inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
@@ -350,7 +354,6 @@ const RegisterQuiz = () => {
         />
       </div>
 
-      {/* Floating Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {[...Array(15)].map((_, i) => (
           <motion.div
@@ -372,7 +375,6 @@ const RegisterQuiz = () => {
         ))}
       </div>
 
-      {/* Progress Bar */}
       <div className="h-1 bg-[#0f1623] w-full fixed top-0 z-50">
         <motion.div
           className="h-full bg-gradient-to-r from-[#00ff88] to-[#7b2ff7]"
@@ -384,8 +386,6 @@ const RegisterQuiz = () => {
 
       <div className="flex-1 flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-3xl relative">
-
-          {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div>
               <motion.h2
@@ -413,7 +413,6 @@ const RegisterQuiz = () => {
             )}
           </div>
 
-          {/* Main Card */}
           <motion.div
             animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : {}}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -460,7 +459,6 @@ const RegisterQuiz = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Navigation */}
           <div className="flex justify-between mt-8">
             <button
               onClick={handleBack}
