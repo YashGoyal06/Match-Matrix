@@ -32,7 +32,6 @@ const Home = () => {
   return (
     <div className="relative min-h-screen bg-[#0a0e1a] overflow-hidden selection:bg-[#00ff88] selection:text-[#0a0e1a]">
       {/* Dynamic Background */}
-
       <div className="absolute inset-0 z-0">
         <LightRays
           raysOrigin="top-center"
@@ -102,7 +101,7 @@ const Home = () => {
         {/* CTA Button */}
         <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <button
-            onClick={() => navigate('/register')}
+            onClick={() => navigate('/mode')} 
             className="group relative px-8 py-4 bg-[#00ff88] text-[#0a0e1a] font-bold text-lg tracking-wider overflow-hidden rounded-xl"
           >
             <span className="relative z-10 flex items-center gap-2">
