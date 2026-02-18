@@ -62,12 +62,41 @@ const DuoRegisterQuiz = () => {
     }, 300);
   };
 
-  const startQuiz = () => {
+  // UPDATED: Async check to verify both users before starting
+  const startQuiz = async () => {
     if(!p1.name || !p1.email || !p2.name || !p2.email) {
       setError("All fields required");
       return;
     }
-    setPhase('p1_quiz');
+    
+    setLoading(true);
+    setError('');
+
+    try {
+      // 1. Verify Member 1
+      const res1 = await participantAPI.verify({ email: p1.email, name: p1.name });
+      if (res1.status === 'registered') {
+        setError(`Member 1 (${p1.name}) is already registered.`);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Verify Member 2
+      const res2 = await participantAPI.verify({ email: p2.email, name: p2.name });
+      if (res2.status === 'registered') {
+        setError(`Member 2 (${p2.name}) is already registered.`);
+        setLoading(false);
+        return;
+      }
+
+      // If both verification calls succeed (which means they are whitelisted and not registered)
+      setPhase('p1_quiz');
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Verification failed (Access Denied)");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const startP2 = () => {
@@ -151,8 +180,12 @@ const DuoRegisterQuiz = () => {
                   </div>
 
                   <div className="md:col-span-2 mt-4 flex justify-center">
-                    <button onClick={startQuiz} className="bg-white text-[#0a0e1a] px-10 py-4 font-bold rounded-lg hover:scale-105 transition-transform flex items-center gap-2">
-                      INITIATE SEQUENCE <ChevronRight />
+                    <button 
+                      onClick={startQuiz} 
+                      disabled={loading}
+                      className="bg-white text-[#0a0e1a] px-10 py-4 font-bold rounded-lg hover:scale-105 transition-transform flex items-center gap-2 disabled:opacity-50 disabled:scale-100"
+                    >
+                      {loading ? 'VERIFYING...' : 'INITIATE SEQUENCE'} <ChevronRight />
                     </button>
                   </div>
                 </motion.div>
