@@ -5,7 +5,6 @@ import { ChevronRight, Users, Zap } from 'lucide-react';
 import { participantAPI } from '../api';
 import LightRays from './LightRays';
 
-// Reusing same questions as standard quiz
 const questions = [
   { id: 1, key: 'q1', question: "When optimizing code, you usually…", options: [{ value: 'A', label: "Optimize only if required" }, { value: 'B', label: "Prefer efficiency from the start" }, { value: 'C', label: "Focus on readability over speed" }, { value: 'D', label: "Let performance tools decide" }] },
   { id: 2, key: 'q2', question: "If deadlines are tight, you prefer…", options: [{ value: 'A', label: "Reduce scope and deliver perfectly" }, { value: 'B', label: "Deliver something working no matter what" }, { value: 'C', label: "Take risks for extra features" }, { value: 'D', label: "Split tasks aggressively" }] },
@@ -26,13 +25,11 @@ const questions = [
 
 const DuoRegisterQuiz = () => {
   const navigate = useNavigate();
-  // Phase: 'details' -> 'p1_quiz' -> 'intermission' -> 'p2_quiz' -> 'submitting'
   const [phase, setPhase] = useState('details');
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Data Stores
   const [p1, setP1] = useState({ name: '', email: '', student_id: '', answers: {} });
   const [p2, setP2] = useState({ name: '', email: '', student_id: '', answers: {} });
 
@@ -51,7 +48,6 @@ const DuoRegisterQuiz = () => {
       if (currentQuestionIdx < questions.length - 1) {
         setCurrentQuestionIdx(c => c + 1);
       } else {
-        // End of questions for current user
         if (phase === 'p1_quiz') {
           setPhase('intermission');
           setCurrentQuestionIdx(0);
@@ -62,7 +58,6 @@ const DuoRegisterQuiz = () => {
     }, 300);
   };
 
-  // UPDATED: Async check to verify both users before starting
   const startQuiz = async () => {
     if(!p1.name || !p1.email || !p2.name || !p2.email) {
       setError("All fields required");
@@ -73,27 +68,28 @@ const DuoRegisterQuiz = () => {
     setError('');
 
     try {
-      // 1. Verify Member 1
+      // 1. Verify Member 1 is not already registered
       const res1 = await participantAPI.verify({ email: p1.email, name: p1.name });
       if (res1.status === 'registered') {
-        setError(`Member 1 (${p1.name}) is already registered.`);
+        setError(`Member 1 (${p1.email}) is already registered.`);
         setLoading(false);
         return;
       }
 
-      // 2. Verify Member 2
+      // 2. Verify Member 2 is not already registered
       const res2 = await participantAPI.verify({ email: p2.email, name: p2.name });
       if (res2.status === 'registered') {
-        setError(`Member 2 (${p2.name}) is already registered.`);
+        setError(`Member 2 (${p2.email}) is already registered.`);
         setLoading(false);
         return;
       }
 
-      // If both verification calls succeed (which means they are whitelisted and not registered)
+      // Proceed to quiz if neither are registered
       setPhase('p1_quiz');
+      
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Verification failed (Access Denied)");
+      setError("Connection to server failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -107,8 +103,6 @@ const DuoRegisterQuiz = () => {
     setLoading(true);
     setPhase('submitting');
     
-    // Construct final payload
-    // Merging answers back into the root for the backend
     const payload = {
       p1: { ...p1, ...p1.answers },
       p2: { ...p2, ...p2.answers }
@@ -117,12 +111,12 @@ const DuoRegisterQuiz = () => {
     try {
       const response = await participantAPI.registerDuo(payload);
       if (response.data.success) {
-        localStorage.setItem('userEmail', p1.email); // Log in as P1
+        localStorage.setItem('userEmail', p1.email);
         navigate('/dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
-      setPhase('details'); // Reset on failure
+      setPhase('details');
       setLoading(false);
     }
   };
@@ -136,7 +130,6 @@ const DuoRegisterQuiz = () => {
       <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-4xl">
           
-          {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight">
               {phase === 'details' && "DUO PROTOCOL REGISTRATION"}
@@ -148,14 +141,12 @@ const DuoRegisterQuiz = () => {
             {error && <div className="text-red-400 font-mono mt-2 bg-red-900/20 inline-block px-4 py-1 rounded">{error}</div>}
           </div>
 
-          {/* Main Content Card */}
           <motion.div 
             layout
             className="bg-[#0f1623]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
           >
             <AnimatePresence mode="wait">
               
-              {/* PHASE 1: DETAILS */}
               {phase === 'details' && (
                 <motion.div 
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -191,7 +182,6 @@ const DuoRegisterQuiz = () => {
                 </motion.div>
               )}
 
-              {/* QUIZ PHASES */}
               {(phase === 'p1_quiz' || phase === 'p2_quiz') && (
                 <motion.div 
                   key="question-container"
@@ -221,7 +211,6 @@ const DuoRegisterQuiz = () => {
                 </motion.div>
               )}
 
-              {/* INTERMISSION */}
               {phase === 'intermission' && (
                 <motion.div 
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -236,7 +225,6 @@ const DuoRegisterQuiz = () => {
                 </motion.div>
               )}
 
-              {/* SUBMITTING */}
               {phase === 'submitting' && (
                 <div className="flex flex-col items-center justify-center py-20">
                   <div className="w-16 h-16 border-4 border-[#00ff88] border-t-transparent rounded-full animate-spin mb-6" />
