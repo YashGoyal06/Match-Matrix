@@ -5,6 +5,7 @@ import RegisterQuiz from './pages/RegisterQuiz';
 import DuoRegisterQuiz from './pages/DuoRegisterQuiz';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import Showcase from './pages/Showcase';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/register-duo" element={<DuoRegisterQuiz />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/showcase" element={<Showcase />} /> 
         </Routes>
       </div>
     </Router>
